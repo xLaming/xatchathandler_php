@@ -18,6 +18,8 @@
 * $chat->setDescription('Your chat description')
 * $chat->setTags('your,chat,tags')
 * $chat->setAdsLink('xat.com/YourChat')
+* $chat->setLanguage('en');
+  * It should be short code of your language
 * $chat->setButtonText(0, 'Your first tab text')
 * $chat->setButtonName(0, 'Your first tab name')
 
@@ -38,5 +40,5 @@
 * R. No, there is a lot of people on official chats using something worse that is xat bot clients, this is just a tool that allows you to control **YOUR** chat.
 
 ## About:
-* Version: **1.0**
+* Version: **1.2**
 * Credits: **Paulo (aka xLaming)**
