@@ -1,8 +1,8 @@
 <?php
 require_once 'src/ChatHandler.php';
 
-define('CHAT_NAME', 'YOUR_CHAT_NAME');
-define('CHAT_PASS', 'YOUR_CHAT_PASS');
+define('CHAT_NAME', 'Mundosmilies');
+define('CHAT_PASS', 'novomundosmilies1379');
 
 $chat = new ChatHandler(CHAT_NAME, CHAT_PASS);
 
@@ -14,5 +14,6 @@ $chat = new ChatHandler(CHAT_NAME, CHAT_PASS);
 #$chat->setDescription('My chat description...');
 #$chat->setTags('mundo,smilies,chat');
 #$chat->setAdsLink('xat.com/Mundosmilies');
+#$chat->setLanguage('en');
 #$chat->setButtonName(0, 'Home');
 #$chat->setButtonText(0, 'Hello, this is my first tab...');
