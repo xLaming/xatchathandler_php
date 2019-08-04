@@ -2,7 +2,7 @@
 class ChatHandler {
     protected $auth = false;
     protected $name, $pass;
-    private $html, $inputs;
+    private $html, $inputs, $headers, $languages;
     /* SETTINGS */
     const NOT_STAFF  = ['guest']; # You can use: member, mod, owner, main
     const BLACK_LIST = [10101, 1510151, 23232323, 356566558]; # Black list, you can ignore bots or someone else
@@ -11,6 +11,7 @@ class ChatHandler {
         'Invalid password.',
         'You need MANAGE power enabled.',
         'Page not found, you can use 0-5.',
+        'Language not found.'
     ];
     const XAT_IDS = [
         7   => 'Darren',
@@ -34,6 +35,10 @@ class ChatHandler {
         try {
             $this->name = $name;
             $this->pass = $pass;
+            $this->headers = [
+                'Referer'    => sprintf(self::URL['chat'], $this->name),
+                'User-Agent' => 'Mozilla/5.0 (X11; Linux i586; rv:31.0) Gecko/20100101 Firefox/31.0',
+            ];
             $this->html = $this->getInitData();
             $this->loadInputs();
         } catch (Exception $e) {
@@ -47,7 +52,7 @@ class ChatHandler {
         $getParams = $this->submit();
         $staffList = [];
         if (strpos($getParams, '**<span data-localize=edit.manage') !== false) {
-            throw new Exception(self::PHRASES[1]);
+            return self::PHRASES[1];
         }
         foreach(explode(PHP_EOL, $getParams) as $line) {
             $user = explode(',', $line);
@@ -119,9 +124,18 @@ class ChatHandler {
         return true;
     }
 
+    public function setLanguage(string $lang) {
+        if (!in_array($lang, $this->languages)) {
+            return self::PHRASES[3];
+        }
+        $this->inputs['Lang'] = $lang;
+        $this->saveChanges();
+        return true;
+    }
+
     public function setButtonText(int $number, string $text) {
         if ($number < 0 || $number > 5){
-            throw new Exception(self::PHRASES[2]);
+            return self::PHRASES[2];
         }
         $input = sprintf("media%d", $number);
         if (array_key_exists($input, $this->inputs)) {
@@ -132,7 +146,7 @@ class ChatHandler {
 
     public function setButtonName(int $number, string $title) {
         if ($number < 0 || $number > 5){
-            throw new Exception(self::PHRASES[2]);
+            return self::PHRASES[2];
         }
         $input = sprintf("button%d", $number);
         if (array_key_exists($input, $this->inputs)) {
@@ -147,10 +161,7 @@ class ChatHandler {
     }
 
     public function submit() {
-        $headers = [
-            'Referer: ' . sprintf(self::URL['chat'], $this->name),
-        ];
-        $getSetup = $this->requests(self::URL['chat'], $this->inputs, $headers);
+        $getSetup = $this->requests(self::URL['chat'], $this->inputs);
         return $getSetup;
     }
 
@@ -201,6 +212,12 @@ class ChatHandler {
         $this->html = str_replace('\r\n', '', $this->html); # fixed
         preg_match_all('/<input(.*?)>/is', $this->html, $getInputs);
         preg_match('/<textarea id="media0"(.*?)>(.*?)<\/textarea>/is', $this->html, $getTextarea);
+        preg_match('/<select name="Lang">(.*?)<\/select>/is', $this->html, $getLang);
+        preg_match_all('/<option value="([\w]+)"(.*?)>(.*?)<\/option>/is', $getLang[0], $getLangList);
+        $this->languages = $getLangList[1];
+        $currentLangId = array_search(' selected', $getLangList[2]);
+        $getLanguage = $this->languages[$currentLangId];
+        $this->inputs['Lang'] = $getLanguage;
         $this->inputs['media0'] = $getTextarea[2];
         foreach ($getInputs[1] as $i) {
             preg_match_all('/name\="(.*?)"/', $i, $getInput);
@@ -223,7 +240,7 @@ class ChatHandler {
         return $this->inputs;
     }
 
-    private function requests($url, $params = array(), $headers = array()) {
+    private function requests($url, $params = array()) {
         $opts = [
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_HEADER         => false,
@@ -232,7 +249,7 @@ class ChatHandler {
             CURLOPT_CONNECTTIMEOUT => 3,
             CURLOPT_TIMEOUT        => 3,
             CURLOPT_MAXREDIRS      => 3,
-            CURLOPT_HTTPHEADER     => $headers,
+            CURLOPT_HTTPHEADER     => $this->headers,
             CURLOPT_POSTFIELDS     => http_build_query($params),
             CURLOPT_POST           => (empty($params) ? false : true),
         ];
