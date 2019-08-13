@@ -2,7 +2,7 @@
 require_once 'src/ChatHandler.php';
 
 define('CHAT_NAME', 'Mundosmilies');
-define('CHAT_PASS', 'novomundosmilies1379');
+define('CHAT_PASS', 'YOUR_PASS_THIS_GOT_CHANGED_OBVIOUSLY');
 
 $chat = new ChatHandler(CHAT_NAME, CHAT_PASS);
 
