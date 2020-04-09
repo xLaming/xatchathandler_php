@@ -5,7 +5,7 @@ class ChatHandler {
     private $html, $inputs, $headers, $languages;
     /* SETTINGS */
     const NOT_STAFF  = ['guest']; # You can use: member, mod, owner, main
-    const BLACK_LIST = [10101, 1510151, 23232323, 356566558]; # Black list, you can ignore bots or someone else
+    const BLACK_LIST = [10101, 1510151, 23232323, 22332233, 356566558]; # Black list, you can ignore bots or someone else
     const CACHE_TIME = 86400; # 24 hours in seconds
     const PHRASES    = [
         'Invalid password.',
@@ -28,6 +28,7 @@ class ChatHandler {
         'edit' => 'https://xat.com/web_gear/chat.php?id=%d&pw=%d',
         'chat' => 'https://xat.com/web_gear/chat/editgroup.php?GroupName=%s',
         'eip'  => 'https://xat.com/web_gear/chat/eip.php?id=%d&pw=%d&md=4&back=%s&t=%s',
+		'ed2t' => 'https://xat.com/web_gear/chat/editgroup2.php',
     ];
     /*-*-*-*-*-*/
 
@@ -37,6 +38,7 @@ class ChatHandler {
             $this->pass = $pass;
             $this->headers = [
                 'Referer'    => sprintf(self::URL['chat'], $this->name),
+				'Origin'     => 'https://xat.com',
                 'User-Agent' => 'Mozilla/5.0 (X11; Linux i586; rv:31.0) Gecko/20100101 Firefox/31.0',
             ];
             $this->html = $this->getInitData();
@@ -161,8 +163,8 @@ class ChatHandler {
     }
 
     public function submit() {
-        $getSetup = $this->requests(self::URL['chat'], $this->inputs);
-        return $getSetup;
+        $getSetup = $this->requests(self::URL['ed2t'], $this->inputs);
+		return substr(base64_decode($getSetup), 12);
     }
 
     public function getUsername(int $uid) {
@@ -240,7 +242,7 @@ class ChatHandler {
         return $this->inputs;
     }
 
-    private function requests($url, $params = array()) {
+    private function requests($url, $params = array(), $test = false) {
         $opts = [
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_HEADER         => false,
@@ -249,8 +251,9 @@ class ChatHandler {
             CURLOPT_CONNECTTIMEOUT => 3,
             CURLOPT_TIMEOUT        => 3,
             CURLOPT_MAXREDIRS      => 3,
+			CURLOPT_ENCODING       => 'gzip,deflate',
             CURLOPT_HTTPHEADER     => $this->headers,
-            CURLOPT_POSTFIELDS     => http_build_query($params),
+            CURLOPT_POSTFIELDS     => $test ? $params : http_build_query($params),
             CURLOPT_POST           => (empty($params) ? false : true),
         ];
         $ch = curl_init($url);
